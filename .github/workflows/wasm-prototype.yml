@@ -22,4 +22,10 @@ jobs:
       - name: Build browser prototype
         run: cargo makepad wasm build -p makepad-example-hello-world --release
       - name: Inspect generated files
-        run: find target -type f \( -name '*.wasm' -o -name '*.html' -o -name '*.js' \) | head -60
+        run: find target/makepad-wasm-app -type f | head -60
+      - name: Upload browser prototype
+        uses: actions/upload-artifact@v4
+        with:
+          name: makepad-wasm-hello-world
+          path: target/makepad-wasm-app/release/makepad-example-hello-world/
+          if-no-files-found: error
