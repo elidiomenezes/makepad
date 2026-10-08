@@ -1,0 +1,25 @@
+name: Makepad WASM prototype
+on:
+  workflow_dispatch:
+  push:
+    branches: [wasm-prototype]
+    paths:
+      - '.github/workflows/wasm-prototype.yml'
+      - 'examples/hello_world/**'
+      - 'tools/cargo_makepad/**'
+jobs:
+  wasm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install Makepad CLI
+        run: cargo install --path ./tools/cargo_makepad
+      - name: Install WASM toolchain
+        run: cargo makepad wasm install-toolchain
+      - name: Build browser prototype
+        run: cargo makepad wasm build -p makepad-example-hello_world --release
+      - name: Inspect generated files
+        run: find target -type f \( -name '*.wasm' -o -name '*.html' -o -name '*.js' \) | head -60
