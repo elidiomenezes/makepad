@@ -1,0 +1,57 @@
+name: Makepad WASM prototype
+on:
+  workflow_dispatch:
+  push:
+    branches: [wasm-prototype]
+    paths:
+      - '.github/workflows/wasm-prototype.yml'
+      - 'examples/hello_world/**'
+      - 'tools/cargo_makepad/**'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  wasm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install Makepad CLI
+        run: cargo install --path ./tools/cargo_makepad
+      - name: Install WASM toolchain
+        run: cargo makepad wasm install-toolchain
+      - name: Build browser prototype
+        run: cargo makepad wasm build -p makepad-example-hello-world --release
+      - name: Inspect generated files
+        run: find target/makepad-wasm-app -type f | head -60
+      - name: Upload browser prototype
+        uses: actions/upload-artifact@v4
+        with:
+          name: makepad-wasm-hello-world
+          path: target/makepad-wasm-app/release/makepad-example-hello-world/
+          if-no-files-found: error
+
+  deploy:
+    needs: wasm
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Download browser prototype
+        uses: actions/download-artifact@v4
+        with:
+          name: makepad-wasm-hello-world
+          path: site
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
