@@ -15,9 +15,6 @@ jobs:
   wasm:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -37,12 +34,24 @@ jobs:
           path: target/makepad-wasm-app/release/makepad-example-hello-world/
           if-no-files-found: error
 
+  deploy:
+    needs: wasm
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+      - name: Download browser prototype
+        uses: actions/download-artifact@v4
+        with:
+          name: makepad-wasm-hello-world
+          path: site
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: target/makepad-wasm-app/release/makepad-example-hello-world/
+          path: site
       - name: Deploy GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
