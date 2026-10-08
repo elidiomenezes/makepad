@@ -20,6 +20,6 @@ jobs:
       - name: Install WASM toolchain
         run: cargo makepad wasm install-toolchain
       - name: Build browser prototype
-        run: cargo makepad wasm build -p makepad-example-hello_world --release
+        run: cargo makepad wasm build -p makepad-example-hello-world --release
       - name: Inspect generated files
         run: find target -type f \( -name '*.wasm' -o -name '*.html' -o -name '*.js' \) | head -60
